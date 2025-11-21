@@ -1,0 +1,35 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0B0B"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)" rx="20"/>
+
+  <!-- Decorative glow circle -->
+  <circle cx="1050" cy="150" r="200" fill="#00E676" opacity="0.06"/>
+
+  <!-- Left Icon (Mac outline + gear) -->
+  <g transform="translate(120,70)">
+    <rect x="0" y="0" width="140" height="95" rx="10" stroke="#00E676" stroke-width="5" fill="none"/>
+    <rect x="35" y="105" width="70" height="14" rx="4" fill="#00E676"/>
+
+    <circle cx="70" cy="47" r="24" stroke="#00E676" stroke-width="5" fill="none"/>
+    <path d="M70 27 v8 M70 59 v8 M50 47 h8 M82 47 h8 
+             M56 33 l6 6 M84 61 l-6 -6 M84 33 l-6 6 M56 61 l6 -6"
+          stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Text -->
+  <text x="330" y="145" fill="#FFFFFF" font-family="SF Mono, Consolas, monospace" font-size="64" font-weight="600">
+    mac_<tspan fill="#00E676">setup</tspan>_lab
+  </text>
+
+  <!-- Subtitle -->
+  <text x="330" y="190" fill="#CCCCCC" font-family="Inter, sans-serif" font-size="26">
+    Automated macOS setup for productivity & development
+  </text>
+</svg>
