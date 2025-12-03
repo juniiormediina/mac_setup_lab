@@ -6,39 +6,52 @@ Cuando se usan pipelines de build para soluciones Flutter, es fundamental valida
 
 ---
 
-**¿Cómo realizar el proceso de validación?**
+**¿Por qué validar la integridad?**
 
-Cada release de Flutter incluye un archivo de provenance con información de integridad. Vamos a realizar el proceso con la versión stable v3.35.6.
-
----
-
-1. Acceder al archivo de releases oficiales
-- Dirígete a la página oficial: [Flutter Release Archive.](https://docs.flutter.dev/release/archive)
-- Busca la versión 3.35.6 en la sección stable.
+- Garantiza que el instalador no ha sido alterado.
+- Previene vulnerabilidades por código malicioso.
+- Cumple buenas prácticas de seguridad en CI/CD.
 
 ---
 
-2. Obtener el Attestation Bundle
-- En la versión seleccionada, encontrarás un enlace llamado Attestation bundle.
-- Descárgalo y ábrelo. Es un archivo JSON que contiene la información de integridad del release.
+## Métodos para obtener el hash SHA-256
+
+Existen dos formas de obtener el hash oficial para la validación:
 
 ---
 
-3. Extraer el JWT del campo payload
-- Dentro del JSON, localiza la llave payload.
-- Copia el valor (es un JWT).
+### Opción 1: Desde el Attestation Bundle (Método oficial)
+
+1. Ir a [Flutter Release Archive.](https://docs.flutter.dev/release/archive)
+2. Buscar la versión deseada (ej. 3.35.6).
+3. Descargar el archivo Attestation bundle.
+4. Copiar el valor del campo payload (JWT).
+5. Decodificar el JWT en jwt.io y extraer el hash SHA-256 oficial.
 
 ---
 
-4. Decodificar el JWT
-- Usa una herramienta como jwt.io.
-- Pega el JWT en la sección Encoded.
-- En el contenido decodificado, busca el hash SHA-256 del release.
-- Para Flutter 3.35.6, el hash oficial es:
+### Opción 2: Generar el hash localmente desde la terminal
+
+Este método es útil si quieres validar el archivo descargado sin depender del Attestation bundle.
+
+Paso a paso:
+
+1. Descargar el instalador oficial:
+```Shell
+curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_3.35.6-stable.zip -o flutter.zip
 ```
-64e6b722e9ebdf9ccc83ef9253f24a3c0519d103e622aeb0c0e7c7647636f1a5
+2. Generar el hash SHA-256 del archivo descargado:
+```Shell
+shasum -a 256 flutter.zip
 ```
-Este será el valor que usaremos para validar el paquete.
+3. Copiar el hash generado:
+El resultado será algo como:
+```
+64e6b722e9ebdf9ccc83ef9253f24a3c0519d103e622aeb0c0e7c7647636f1a5  flutter.zip
+```
+
+4. Usar este hash en tu script:
+Este valor será tu expectedHash para la validación.
 
 ---
 
