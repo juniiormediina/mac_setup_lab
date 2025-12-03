@@ -1,48 +1,69 @@
-Descripción:
+# ✅ Validación de integridad del paquete Flutter en pipelines
 
-Cuando se hace uso de los pipelines de build para soluciones Flutter, es necesario realizar la validación del paquete de instalación del framework al momento de preparar la instancia, esto debido a que es fundamental validar la integridad del instalador para prevenir posibles vulnerabilidades.
+---
 
-¿Como realizar el proceso de validación?
+Cuando se usan pipelines de build para soluciones Flutter, es fundamental validar la integridad del instalador del framework antes de preparar la instancia. Esto previene vulnerabilidades y asegura que el paquete descargado es el original publicado por el equipo de Flutter.
 
-Cada release de flutter tiene su propio archivo de validación de integridad, vamos a realizar el proceso con el release stable v3.19.3, para esto nos dirigimos a la pagina oficial de los release de Flutter https://docs.flutter.dev/release/archive
+---
 
-Aqui podemos encontrar el resumen de versiones release lanzadas por el equipo de Flutter.
+**¿Cómo realizar el proceso de validación?**
 
-image.png
+Cada release de Flutter incluye un archivo de provenance con información de integridad. Vamos a realizar el proceso con la versión stable v3.35.6.
 
-Para la versión 3.19.3 que queremos certificar podemos observar que existe una información provenance con nombre "Attestation bundle"
+---
 
-image.png
+1. Acceder al archivo de releases oficiales
+- Dirígete a la página oficial: [Flutter Release Archive.](https://docs.flutter.dev/release/archive)
+- Busca la versión 3.35.6 en la sección stable.
 
-Al abrirlo encontramos que se trata de un json con la información de integridad de ese release particular.
+---
 
-image.png
+2. Obtener el Attestation Bundle
+- En la versión seleccionada, encontrarás un enlace llamado Attestation bundle.
+- Descárgalo y ábrelo. Es un archivo JSON que contiene la información de integridad del release.
 
-Aquí nos interesa de forma particular la llave del json "payload", contiene un JWT con la información del release y el hash de integridad, procedemos a copiarlo para poder decodificarlo.
+---
 
-image.png
+3. Extraer el JWT del campo payload
+- Dentro del JSON, localiza la llave payload.
+- Copia el valor (es un JWT).
 
-Una vez copiado el JWT podemos decodificarlo con alguna herramienta para este fin, para este proceso podemos usar la siguiente herramienta online https://jwt.io/
+---
 
-Pegamos el JWT copiado dentro de la ventana "Encoded" de la herramienta y obtendremos el HASH SHA-256 para este release particular
+4. Decodificar el JWT
+- Usa una herramienta como jwt.io.
+- Pega el JWT en la sección Encoded.
+- En el contenido decodificado, busca el hash SHA-256 del release.
+- Para Flutter 3.35.6, el hash oficial es:
+```
+64e6b722e9ebdf9ccc83ef9253f24a3c0519d103e622aeb0c0e7c7647636f1a5
+```
+Este será el valor que usaremos para validar el paquete.
 
-image.png
+---
 
-Este HASH podemos usarlo para realizar la validación del paquete de instalación dentro de los pipiles de build o dentro del proceso de desarrollo.
+¿Cómo realizar la validación dentro del pipeline?
 
-¿Como realizar el proceso de validación dentro del pipeline de build?
+El proceso consiste en:
+- Descargar el paquete Flutter desde el repositorio oficial.
+- Generar el hash SHA-256 del archivo descargado.
+- Compararlo con el hash oficial obtenido del Attestation bundle.
 
-El proceso consiste en obtener el HASH SHA-256 del archivo descargado dentro del pipeline y compararlo con el obtenido en el proceso de manual referenciado en el paso anterior
+---
 
-Este es un ejemplo de un script sh que puede usarse como referencia, lo que hace es generar el SHA-256 a partir del archivo flutter.zip descargado del repositorio oficial y compararlo con el HASH que obtuvimos directamente de la información de provenance del archivo de releases.
+✅ Ejemplo de script para macOS/Linux
 
-default_version="3.19.3"
+```shell
+#!/bin/bash
+
+default_version="3.35.6"
 version=${1:-$default_version}
 
 echo "\n**** Descargando Flutter [ $version ] ****\n"
-curl https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_$version-stable.zip >flutter.zip
+curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_$version-stable.zip -o flutter.zip
 
-expectedHash="61eaa3b6ebc27d00bbe6bb8076240897b7b99979e9553f40a24a739708c97c39"
+# Hash oficial del release 3.35.6
+expectedHash="64e6b722e9ebdf9ccc83ef9253f24a3c0519d103e622aeb0c0e7c7647636f1a5"
 downloaded_hash=$(shasum -a 256 flutter.zip | awk '{print $1}')
 
 if [ "$expectedHash" != "$downloaded_hash" ]; then
@@ -51,15 +72,37 @@ if [ "$expectedHash" != "$downloaded_hash" ]; then
 else
     echo "\n**** Validación de integridad del paquete exitosa. ✅ ✅ ****\n"
 fi
-Información Relacionada
 
-¿Que es un HASH y porque es tan importante?
+echo "\n**** Descomprimiendo archivo descargado Flutter [ $version ] ****\n"
+unzip -q flutter.zip
 
-Un HASH es el resultado de una función criptográfica y matemática usada muy comúnmente en tareas de validación de integridad de datos.
+echo "\n**** Eliminando archivo descargado flutter.zip ****\n"
+rm -f flutter.zip
 
-Características de un hash:
+echo "\n**** Configurando variables de entorno ****\n"
+export PATH="$PATH:$(pwd)/flutter/bin"
 
-Permiten identificar de manera inequívoca un conjunto particular de datos, esto quiere decir que a la misma entrada siempre tendremos la misma salida alfanumérica (hash)
-Son únicos, usando algoritmos de hashing seguros como SHA-256 obtendremos siempre el mismo hash para la misma entrada de datos.
-Son unidireccionales, esto quiere decir que a partir de los datos originales es posible generar el hash, pero, no es posible obtener la data original partir de un hash generado.
-Los hash son importantes porque nos permiten garantizar la integridad de los datos que se usarán para un determinado proceso, en el caso puntual de los instaladores de Flutter nos garantiza que siempre vamos a usar la versión original lanzada por el equipo de Google y no una posible versión falsa con código corrupto o vulnerabilidades no deseadas.
+echo "\n**** Ejecutando flutter doctor ****\n"
+flutter doctor
+```
+---
+
+**¿Qué es un HASH y por qué es importante?**
+
+Un hash es el resultado de una función criptográfica que permite validar la integridad de datos.
+
+Características:
+
+- Único: para la misma entrada, siempre genera el mismo valor.
+- Unidireccional: no se puede obtener la data original desde el hash.
+- Seguro: usando algoritmos como SHA-256, garantiza que cualquier alteración en el archivo cambia el hash.
+
+En este caso, el hash asegura que el instalador de Flutter no ha sido modificado y proviene del equipo oficial.
+
+---
+
+✅ Beneficios:
+
+- Previene vulnerabilidades.
+- Garantiza integridad en CI/CD.
+- Cumple buenas prácticas de seguridad.
