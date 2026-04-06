@@ -75,6 +75,7 @@ run_basic_setup() {
 
   bash "$SCRIPT_DIR/validate_core.sh"
   bash "$SCRIPT_DIR/setup_base.sh"
+  bash "$SCRIPT_DIR/move_command_files.sh"
   bash "$SCRIPT_DIR/install_core.sh"
 
   log_success "Fase básica completada."

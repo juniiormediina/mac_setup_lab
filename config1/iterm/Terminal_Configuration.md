@@ -56,7 +56,7 @@ Una vez descargadas, **haz doble clic en cada una para instalarlas** en tu siste
 Edita tu archivo `~/.zshrc`:
 
 ```bash
-nano ~/.zshrc
+nano ~/zshrc
 ```
 
 Busca la línea con `ZSH_THEME` y reemplázala por:
