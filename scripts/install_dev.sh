@@ -15,46 +15,36 @@ source "$SCRIPT_DIR/utils.sh"
 # shellcheck source=../config/packages.conf
 source "$PROJECT_ROOT/config/packages.conf"
 
-install_dev_casks() {
+install_dev_packages() {
+  print_header "Instalación de herramientas de desarrollo"
+
+  require_homebrew
+
   local record
-  local cask_name
+  local package_type
+  local package_name
   local display_name
-  local app_name
+  local validation_target
 
-  for record in "${DEV_CASKS[@]}"; do
-    cask_name="$(parse_pipe_record "$record" 1)"
-    display_name="$(parse_pipe_record "$record" 2)"
-    app_name="$(parse_pipe_record "$record" 3)"
+  for record in "${DEV_PACKAGES[@]}"; do
+    package_type="$(parse_pipe_record "$record" 1)"
+    package_name="$(parse_pipe_record "$record" 2)"
+    display_name="$(parse_pipe_record "$record" 3)"
+    validation_target="$(parse_pipe_record "$record" 4)"
 
-    install_brew_cask_if_missing "$cask_name" "$display_name" "$app_name"
+    install_package_from_record \
+      "$package_type" \
+      "$package_name" \
+      "$display_name" \
+      "$validation_target"
   done
-}
 
-install_dev_formulas() {
-  local record
-  local formula_name
-  local display_name
-  local validation_command
-
-  for record in "${DEV_FORMULAS[@]}"; do
-    formula_name="$(parse_pipe_record "$record" 1)"
-    display_name="$(parse_pipe_record "$record" 2)"
-    validation_command="$(parse_pipe_record "$record" 3)"
-
-    install_brew_formula_if_missing "$formula_name" "$display_name" "$validation_command"
-  done
+  log_success "Instalación de herramientas de desarrollo completada."
 }
 
 main() {
   require_macos
-  require_homebrew
-
-  print_header "Instalación de herramientas de desarrollo"
-
-  install_dev_casks
-  install_dev_formulas
-
-  log_success "Instalación de herramientas de desarrollo completada."
+  install_dev_packages
 }
 
 main "$@"

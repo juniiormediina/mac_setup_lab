@@ -257,6 +257,25 @@ parse_pipe_record() {
   echo "$record" | awk -F'|' -v idx="$field_index" '{print $idx}'
 }
 
+install_package_from_record() {
+  local package_type="$1"
+  local package_name="$2"
+  local display_name="$3"
+  local validation_target="$4"
+
+  case "$package_type" in
+    cask)
+      install_brew_cask_if_missing "$package_name" "$display_name" "$validation_target"
+      ;;
+    formula)
+      install_brew_formula_if_missing "$package_name" "$display_name" "$validation_target"
+      ;;
+    *)
+      abort "Tipo de paquete no soportado: $package_type"
+      ;;
+  esac
+}
+
 confirm_action() {
   local prompt_message="$1"
 

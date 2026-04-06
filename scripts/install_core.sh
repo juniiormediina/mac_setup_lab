@@ -21,16 +21,22 @@ install_core_packages() {
   require_homebrew
 
   local record
-  local cask_name
+  local package_type
+  local package_name
   local display_name
-  local app_name
+  local validation_target
 
-  for record in "${CORE_CASKS[@]}"; do
-    cask_name="$(parse_pipe_record "$record" 1)"
-    display_name="$(parse_pipe_record "$record" 2)"
-    app_name="$(parse_pipe_record "$record" 3)"
+  for record in "${CORE_PACKAGES[@]}"; do
+    package_type="$(parse_pipe_record "$record" 1)"
+    package_name="$(parse_pipe_record "$record" 2)"
+    display_name="$(parse_pipe_record "$record" 3)"
+    validation_target="$(parse_pipe_record "$record" 4)"
 
-    install_brew_cask_if_missing "$cask_name" "$display_name" "$app_name"
+    install_package_from_record \
+      "$package_type" \
+      "$package_name" \
+      "$display_name" \
+      "$validation_target"
   done
 }
 

@@ -13,25 +13,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
 
 MODE=""
-NON_INTERACTIVE="false"
 
 show_help() {
-  cat <<EOF2
+  cat <<EOF
 Uso:
   ./scripts/bootstrap.sh
 
 Opciones:
   --basic              Ejecuta solo configuración básica
   --full               Ejecuta configuración básica + desarrollo
-  --yes                Modo no interactivo
   --help               Muestra esta ayuda
 
 Ejemplos:
   ./scripts/bootstrap.sh
   ./scripts/bootstrap.sh --basic
   ./scripts/bootstrap.sh --full
-  ./scripts/bootstrap.sh --full --yes
-EOF2
+EOF
 }
 
 parse_args() {
@@ -43,10 +40,6 @@ parse_args() {
         ;;
       --full)
         MODE="full"
-        shift
-        ;;
-      --yes)
-        NON_INTERACTIVE="true"
         shift
         ;;
       --help|-h)
@@ -115,15 +108,11 @@ main() {
   show_welcome
 
   if [[ -z "$MODE" ]]; then
-    if [[ "$NON_INTERACTIVE" == "true" ]]; then
-      abort "En modo no interactivo debes indicar --basic o --full."
-    fi
     resolve_mode_interactively
   fi
 
   log_info "Archivo de log: $LOG_FILE"
   log_info "Modo seleccionado: $MODE"
-  log_info "Modo no interactivo: $NON_INTERACTIVE"
 
   case "$MODE" in
     basic)
