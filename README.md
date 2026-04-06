@@ -75,7 +75,7 @@ Instala, validando previamente si ya existen:
 - Visual Studio Code
 - WebStorm
 - Android Studio
-- IntelliJ IDEA Community Edition
+- IntelliJ IDEA
 - Node.js
 - Python
 - iTerm2
@@ -122,7 +122,6 @@ Ejemplos:
 
 ```bash
 chmod +x scripts/*.sh
-chmod +x commands/*
 ```
 
 ### 2. Ejecutar modo interactivo
