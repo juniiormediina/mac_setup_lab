@@ -1,4 +1,4 @@
-# mac_setup_lab
+# mac_setup_lab v2.3
 
 Automatización modular para preparar una nueva máquina macOS de forma ordenada, clara y profesional.
 
@@ -9,7 +9,7 @@ Este proyecto permite ejecutar una configuración inicial en dos niveles:
 1. Configuración y herramientas básicas
 2. Herramientas de desarrollo
 
-La solución está diseñada con enfoque modular, mantenible y extensible.
+Además instala y configura automáticamente la base de shell del usuario con Oh My Zsh, Powerlevel10k, plugins y prompt personalizado.
 
 ---
 
@@ -19,8 +19,16 @@ La solución está diseñada con enfoque modular, mantenible y extensible.
 mac_setup_lab/
 ├─ README.md
 ├─ .gitignore
+├─ commands/
+│  ├─ androidstudio
+│  ├─ intellij
+│  ├─ webstorm
+│  ├─ clean.sh
+│  └─ unit_test.sh
 ├─ config/
-│  └─ packages.conf
+│  ├─ packages.conf
+│  ├─ zshrc
+│  └─ p10k.zsh
 ├─ logs/
 │  └─ .gitkeep
 └─ scripts/
@@ -28,6 +36,9 @@ mac_setup_lab/
    ├─ utils.sh
    ├─ validate_core.sh
    ├─ setup_base.sh
+   ├─ move_command_files.sh
+   ├─ install_shell_stack.sh
+   ├─ configure_shell.sh
    ├─ install_core.sh
    └─ install_dev.sh
 ```
@@ -46,9 +57,16 @@ mac_setup_lab/
   - ~/Commands
 - crea y configura:
   - ~/Documents/Screenshots
+- copia scripts desde `commands/` hacia `~/Commands`
 - instala:
+  - Oh My Zsh
+  - Powerlevel10k
+  - zsh-autosuggestions
+  - zsh-syntax-highlighting
   - Google Chrome
   - Rectangle
+- copia `config/zshrc` hacia `~/.zshrc` haciendo backup si ya existe
+- copia `config/p10k.zsh` hacia `~/.p10k.zsh` haciendo backup si ya existe
 
 ### Parte 2: herramientas de desarrollo
 
@@ -62,6 +80,30 @@ Instala, validando previamente si ya existen:
 - Python
 - iTerm2
 - Docker Desktop
+
+---
+
+## Estructura de `config/packages.conf`
+
+Formato de cada registro:
+
+```bash
+tipo|nombre_brew|nombre_visible|valor_validacion
+```
+
+Ejemplos:
+
+```bash
+"cask|google-chrome|Google Chrome|Google Chrome"
+"formula|node|Node.js|node"
+```
+
+- `tipo`: `cask` o `formula`
+- `nombre_brew`: nombre del paquete en Homebrew
+- `nombre_visible`: texto que se muestra en consola
+- `valor_validacion`:
+  - para `cask`: nombre de la app esperada en `/Applications`
+  - para `formula`: comando a validar con `command -v`
 
 ---
 
@@ -80,6 +122,7 @@ Instala, validando previamente si ya existen:
 
 ```bash
 chmod +x scripts/*.sh
+chmod +x commands/*
 ```
 
 ### 2. Ejecutar modo interactivo
@@ -100,12 +143,6 @@ chmod +x scripts/*.sh
 ./scripts/bootstrap.sh --full
 ```
 
-### 5. Ejecutar sin preguntas interactivas
-
-```bash
-./scripts/bootstrap.sh --full --yes
-```
-
 ---
 
 ## Logs
@@ -116,64 +153,12 @@ Cada ejecución genera un archivo en:
 logs/
 ```
 
-Esto permite revisar detalles, errores o auditoría del proceso.
-
----
-
-## Decisiones de diseño
-
-### `bootstrap.sh`
-Es el punto de entrada. Orquesta todo el flujo.
-
-### `utils.sh`
-Contiene funciones reutilizables:
-- logging
-- validaciones
-- detección de Homebrew
-- helpers comunes
-
-### `validate_core.sh`
-Responsable de la base mínima del sistema:
-- Homebrew
-- Git
-
-### `setup_base.sh`
-Responsable de:
-- crear carpetas
-- configurar screenshots
-
-### `install_core.sh`
-Instala apps básicas.
-
-### `install_dev.sh`
-Instala herramientas de desarrollo.
-
-### `config/packages.conf`
-Centraliza la lista de herramientas. Esto facilita crecimiento futuro.
-
 ---
 
 ## Consideraciones importantes
 
-### Homebrew
-La instalación oficial puede pedir contraseña de administrador.
-
-### Apple Silicon
-El script contempla correctamente `/opt/homebrew`.
-
-### Docker Desktop
-Puede requerir pasos adicionales la primera vez que se abre.
-
-### Visual Studio Code
-El script instala la app, pero no habilita automáticamente el comando `code` en PATH.
-
----
-
-## Futuras mejoras posibles
-
-- soporte para seleccionar paquetes individualmente
-- configuración de Git global
-- instalación de Java, Flutter o Android SDK variables
-- shellcheck en CI
-- más validaciones post-instalación
-- soporte para dotfiles
+- `install_shell_stack.sh` instala Oh My Zsh en modo unattended.
+- `configure_shell.sh` hace backup del `.zshrc` y del `.p10k.zsh` existentes antes de reemplazarlos.
+- `zsh-syntax-highlighting` debe quedar como último plugin cargado en `.zshrc`.
+- `config/p10k.zsh` versiona la apariencia del prompt de Powerlevel10k para que quede consistente en cualquier Mac nueva.
+- iTerm2 no crea automáticamente `~/.zshrc`; el archivo lo crea o copia este proyecto.
