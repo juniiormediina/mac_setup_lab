@@ -1,98 +1,146 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# =====================================================
-# 🚀 BOOTSTRAP — Instalación & Configuración MacOS
-# Orquesta todo el proceso en orden
-# =====================================================
+# =========================================
+# bootstrap.sh
+# Script maestro de automatización macOS.
+# =========================================
 
-print_title() {
-    echo ""
-    echo "============================================"
-    echo " $1"
-    echo "============================================"
-    echo ""
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# shellcheck source=./utils.sh
+source "$SCRIPT_DIR/utils.sh"
+
+MODE=""
+NON_INTERACTIVE="false"
+
+show_help() {
+  cat <<EOF2
+Uso:
+  ./scripts/bootstrap.sh
+
+Opciones:
+  --basic              Ejecuta solo configuración básica
+  --full               Ejecuta configuración básica + desarrollo
+  --yes                Modo no interactivo
+  --help               Muestra esta ayuda
+
+Ejemplos:
+  ./scripts/bootstrap.sh
+  ./scripts/bootstrap.sh --basic
+  ./scripts/bootstrap.sh --full
+  ./scripts/bootstrap.sh --full --yes
+EOF2
 }
 
-print_step() {
-    echo ""
-    echo "➡ $1"
-    echo ""
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --basic)
+        MODE="basic"
+        shift
+        ;;
+      --full)
+        MODE="full"
+        shift
+        ;;
+      --yes)
+        NON_INTERACTIVE="true"
+        shift
+        ;;
+      --help|-h)
+        show_help
+        exit 0
+        ;;
+      *)
+        abort "Argumento no reconocido: $1"
+        ;;
+    esac
+  done
 }
 
-# =====================================================
-# 0. Verificar permisos de ejecución en scripts
-# =====================================================
-print_title "Verificando permisos de ejecución"
+show_welcome() {
+  clear || true
 
-chmod +x setup_base.sh
-chmod +x install_basic_apps.sh
-chmod +x install_dev_tools.sh
+  print_header "Configuración inicial macOS"
 
-echo "✔ Permisos verificados."
+  echo "Este proceso prepara una nueva Mac de forma ordenada, clara y profesional."
+  echo
+  echo "Incluye:"
+  echo "  - validación e instalación de herramientas base"
+  echo "  - creación de carpetas principales"
+  echo "  - configuración de screenshots"
+  echo "  - instalación opcional de herramientas de desarrollo"
+  echo
+  echo "Se generará un log de ejecución en la carpeta logs/."
+  echo
+}
 
-# =====================================================
-# 1. Ejecutar Setup Base
-# =====================================================
-print_title "Paso 1 — Ejecutando Setup Base (Homebrew + Git + Configs)"
+run_basic_setup() {
+  print_header "Fase 1: configuración y herramientas básicas"
 
-print_step "Iniciando setup_base.sh..."
-./setup_base.sh
+  bash "$SCRIPT_DIR/validate_core.sh"
+  bash "$SCRIPT_DIR/setup_base.sh"
+  bash "$SCRIPT_DIR/install_core.sh"
 
-if [[ $? -ne 0 ]]; then
-    echo "❌ Error ejecutando setup_base.sh. Abortando bootstrap."
-    exit 1
-fi
+  log_success "Fase básica completada."
+}
 
-echo "✔ Setup base completado."
+run_dev_setup() {
+  print_header "Fase 2: herramientas de desarrollo"
 
-# =====================================================
-# 2. Instalación de Apps Básicas
-# =====================================================
-print_title "Paso 2 — Instalando apps básicas"
+  bash "$SCRIPT_DIR/install_dev.sh"
 
-print_step "Iniciando install_basic_apps.sh..."
-./install_basic_apps.sh
+  log_success "Fase de desarrollo completada."
+}
 
-if [[ $? -ne 0 ]]; then
-    echo "❌ Error ejecutando install_basic_apps.sh. Abortando bootstrap."
-    exit 1
-fi
+resolve_mode_interactively() {
+  local selected_option
 
-echo "✔ Apps básicas instaladas."
+  selected_option="$(show_main_menu)"
 
-# =====================================================
-# 3. Instalación de Herramientas de Desarrollo (opcional)
-# =====================================================
-print_title "Paso 3 — Instalación de herramientas de desarrollo"
+  case "$selected_option" in
+    1) MODE="basic" ;;
+    2) MODE="full" ;;
+    *) abort "Opción inválida. Debes seleccionar 1 o 2." ;;
+  esac
+}
 
-print_step "Verificando si se solicitó instalación de herramientas dev..."
+main() {
+  require_macos
+  init_logs
+  parse_args "$@"
 
-# El script setup_base.sh se encarga de preguntar y ejecutar install_dev_tools.sh,
-# pero igual validamos que exista y está ejecutable.
-if [[ -f "install_dev_tools.sh" ]]; then
-    echo "✔ Script de dev tools listo."
-else
-    echo "⚠ No se encontró install_dev_tools.sh"
-fi
+  show_welcome
 
-echo ""
-echo "Si en el Setup Base elegiste instalar herramientas de desarrollo, ya se instalaron."
-echo "Si no, puedes ejecutarlo manualmente con:"
-echo ""
-echo "   ./install_dev_tools.sh"
-echo ""
+  if [[ -z "$MODE" ]]; then
+    if [[ "$NON_INTERACTIVE" == "true" ]]; then
+      abort "En modo no interactivo debes indicar --basic o --full."
+    fi
+    resolve_mode_interactively
+  fi
 
-# =====================================================
-# 4. Finalización
-# =====================================================
-print_title "🎉 BOOTSTRAP COMPLETADO"
+  log_info "Archivo de log: $LOG_FILE"
+  log_info "Modo seleccionado: $MODE"
+  log_info "Modo no interactivo: $NON_INTERACTIVE"
 
-echo "Tu Mac ahora está configurado con:"
-echo "✔ Homebrew"
-echo "✔ Git"
-echo "✔ Configuraciones del sistema"
-echo "✔ Apps básicas"
-echo "✔ (Opcional) Herramientas de desarrollo"
-echo ""
-echo "🚀 Todo listo para trabajar."
-echo ""
+  case "$MODE" in
+    basic)
+      run_basic_setup
+      ;;
+    full)
+      run_basic_setup
+      run_dev_setup
+      ;;
+    *)
+      abort "Modo inválido: $MODE"
+      ;;
+  esac
+
+  print_header "Proceso finalizado"
+  log_success "La automatización terminó correctamente."
+  log_info "Revisa el log si deseas más detalle: $LOG_FILE"
+}
+
+main "$@"

@@ -1,91 +1,44 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# =====================================================
-# ⚙️ BASE SETUP — Validaciones + Configs Iniciales
-# =====================================================
+# =========================================
+# setup_base.sh
+# Crea carpetas base y configura screenshots.
+# =========================================
 
-print_title() {
-    echo ""
-    echo "============================================"
-    echo " $1"
-    echo "============================================"
-    echo ""
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./utils.sh
+source "$SCRIPT_DIR/utils.sh"
+
+create_base_directories() {
+  print_header "Creación de carpetas base"
+
+  create_directory_if_missing "$HOME/Projects" "Projects"
+  create_directory_if_missing "$HOME/Development" "Development"
+  create_directory_if_missing "$HOME/Commands" "Commands"
 }
 
-# --------------------------
-# 1. Validar Homebrew
-# --------------------------
-print_title "Validando Homebrew"
+configure_screenshots_location() {
+  local screenshots_dir="$HOME/Documents/Screenshots"
 
-if ! command -v brew &>/dev/null; then
-    echo "⚠ Homebrew no está instalado."
-    read -p "¿Deseas instalarlo? (y/n): " hb
+  print_header "Configuración de screenshots"
 
-    if [[ "$hb" == "y" ]]; then
-        echo "➡ Instalando Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  create_directory_if_missing "$screenshots_dir" "Documents/Screenshots"
 
-        echo >> "$HOME/.zprofile"
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+  print_step "Configurando ubicación de capturas..."
+  defaults write com.apple.screencapture location "$screenshots_dir"
 
-        eval "$(/opt/homebrew/bin/brew shellenv)"
+  print_step "Reiniciando SystemUIServer..."
+  killall SystemUIServer >/dev/null 2>&1 || true
 
-        echo "✔ Homebrew instalado y configurado."
-    else
-        echo "❌ No se puede continuar sin Homebrew. Abortando."
-        exit 1
-    fi
-else
-    echo "✔ Homebrew ya está instalado."
-fi
+  log_success "Las capturas se guardarán en: $screenshots_dir"
+}
 
-brew update
+main() {
+  require_macos
+  create_base_directories
+  configure_screenshots_location
+}
 
-# --------------------------
-# 2. Instalar Git (si falta)
-# --------------------------
-print_title "Validando Git"
-
-if ! command -v git &>/dev/null; then
-    echo "⚠ Git no encontrado. Instalando..."
-    brew install git
-else
-    echo "✔ Git ya está instalado."
-fi
-
-# --------------------------
-# 3. Configurar carpeta Development
-# --------------------------
-print_title "Creando carpeta ~/Development"
-
-DEV_DIR="$HOME/Development"
-
-mkdir -p "$DEV_DIR"
-echo "✔ Carpeta Development lista."
-
-# --------------------------
-# 4. Configurar Screenshots
-# --------------------------
-print_title "Configurando ubicación de Screenshots"
-
-mkdir -p ~/Documents/Screenshots
-defaults write com.apple.screencapture location ~/Documents/Screenshots
-killall SystemUIServer
-
-echo "✔ Screenshots configurados."
-
-# --------------------------
-# 5. Preguntar por instalación de dev tools
-# --------------------------
-print_title "¿Deseas instalar herramientas de desarrollo?"
-read -p "(y/n): " dev_choice
-
-if [[ "$dev_choice" == "y" ]]; then
-    echo "➡ Se instalarán las herramientas de desarrollo."
-    ./install_dev_tools.sh
-else
-    echo "⚠ Saltado: herramientas de desarrollo"
-fi
-
-print_title "Base Setup Completado"
-echo "Ahora ejecuta: ./install_basic_apps.sh"
+main "$@"

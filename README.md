@@ -1,166 +1,179 @@
 # mac_setup_lab
 
-<p align="center">
-  <img src="assets/banner.svg" width="100%" />
-</p>
+Automatización modular para preparar una nueva máquina macOS de forma ordenada, clara y profesional.
 
-**Automated macOS setup for productivity & development.**
+## Objetivo
 
-mac_setup_lab es un conjunto de scripts diseñados para automatizar la instalación, configuración y preparación de un entorno macOS para productividad y desarrollo de software.
+Este proyecto permite ejecutar una configuración inicial en dos niveles:
 
-La estructura sigue una lógica modular, segura y mantenible: primero se configuran ajustes del sistema, luego se valida la presencia de Homebrew y Git, y finalmente se ejecuta la instalación de herramientas básicas o, si el usuario lo desea, la instalación completa del entorno de desarrollo.
+1. Configuración y herramientas básicas
+2. Herramientas de desarrollo
+
+La solución está diseñada con enfoque modular, mantenible y extensible.
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del proyecto
 
-```
+```text
 mac_setup_lab/
-│
-├─ assets/
-│   └─ banner.svg
-│
-├─ scripts/
-│   ├─ bootstrap.sh              # Script maestro
-│   ├─ setup_base.sh             # Configuraciones iniciales macOS
-│   ├─ validate_core.sh          # Validación de Homebrew y Git
-│   ├─ install_core.sh           # Instalación de apps básicas
-│   ├─ install_dev.sh            # Instalación de stack de desarrollo
-│   └─ utils.sh                  # Funciones compartidas
-│
+├─ README.md
+├─ .gitignore
 ├─ config/
-│   ├─ git-templates/            # Archivos iniciales para configuración de Git
-│   └─ docs/                     # Documentación adicional
-│
-└─ README.md
+│  └─ packages.conf
+├─ logs/
+│  └─ .gitkeep
+└─ scripts/
+   ├─ bootstrap.sh
+   ├─ utils.sh
+   ├─ validate_core.sh
+   ├─ setup_base.sh
+   ├─ install_core.sh
+   └─ install_dev.sh
 ```
 
 ---
 
-## 🚀 Flujo de Instalación
+## Qué hace
 
-### 1️⃣ Ejecutar el script maestro
+### Parte 1: configuración y herramientas básicas
 
-El punto de entrada recomendado es:
+- valida e instala Homebrew
+- valida e instala Git
+- crea las carpetas:
+  - ~/Projects
+  - ~/Development
+  - ~/Commands
+- crea y configura:
+  - ~/Documents/Screenshots
+- instala:
+  - Google Chrome
+  - Rectangle
+
+### Parte 2: herramientas de desarrollo
+
+Instala, validando previamente si ya existen:
+
+- Visual Studio Code
+- WebStorm
+- Android Studio
+- IntelliJ IDEA Community Edition
+- Node.js
+- Python
+- iTerm2
+- Docker Desktop
+
+---
+
+## Requisitos
+
+- macOS
+- conexión a internet
+- permisos de administrador
+- bash disponible en el sistema
+
+---
+
+## Cómo usar
+
+### 1. Dar permisos de ejecución
+
+```bash
+chmod +x scripts/*.sh
+```
+
+### 2. Ejecutar modo interactivo
 
 ```bash
 ./scripts/bootstrap.sh
 ```
 
-El script:
-
-* Ejecuta configuraciones iniciales del sistema.
-* Valida si Homebrew y Git están instalados.
-* Si no lo están, los instala previo consentimiento del usuario.
-* Crea la carpeta **~/Development** como espacio raíz de trabajo.
-* Pregunta si deseas instalar solo herramientas básicas o todo el entorno de desarrollo.
-
----
-
-## 🧩 Scripts Principales
-
-### 🔧 `setup_base.sh`
-
-Incluye configuraciones iniciales de macOS, como:
-
-* Carpeta de capturas de pantalla
-* Ajustes del SystemUIServer
-* Estructura de carpetas base
-
-Ejemplo:
+### 3. Ejecutar solo parte básica
 
 ```bash
-mkdir -p ~/Documents/Screenshots
-defaults write com.apple.screencapture location ~/Documents/Screenshots
-killall SystemUIServer
+./scripts/bootstrap.sh --basic
 ```
 
----
-
-### ✔️ `validate_core.sh`
-
-Verifica que Homebrew y Git estén instalados. Si no lo están, solicita permisos para instalarlos.
-
-Incluye:
-
-* Instalación de Homebrew
-* Configuración de shellenv
-* Validación e instalación de Git
-
----
-
-### 🌱 `install_core.sh`
-
-Instala herramientas básicas para cualquier usuario:
-
-* **Google Chrome**
-* **Rectangle**
-* **Spotify**
-
-Cada instalación sigue este patrón:
-
-* Verificar si ya está instalado
-* Preguntar si el usuario desea instalarlo
-* Continuar con el siguiente si se rechaza
-
----
-
-### 🧑‍💻 `install_dev.sh`
-
-Instala herramientas de desarrollo bajo confirmación del usuario:
-
-* Node.js
-* Python
-* iTerm2
-* Docker
-* VS Code
-* Android Studio
-* WebStorm
-* IntelliJ IDEA CE
-
-Incluye clonación de repos internos en `~/Development`.
-
----
-
-## 🗃️ Carpetas creadas automáticamente
-
-Durante la ejecución inicial, se crean:
-
-```
-~/Development/
-    ├─ configs/
-    ├─ templates/
-    └─ repos/
-```
-
-Aquí podrás:
-
-* Guardar configuraciones personalizadas.
-* Clonar repositorios propios desde Git.
-* Mantener documentación del entorno.
-
----
-
-## 🧪 Modo de Pruebas
-
-Puedes ejecutar cada script de forma independiente para debugging:
+### 4. Ejecutar parte básica + desarrollo
 
 ```bash
-bash scripts/setup_base.sh
-bash scripts/validate_core.sh
-bash scripts/install_core.sh
-bash scripts/install_dev.sh
+./scripts/bootstrap.sh --full
+```
+
+### 5. Ejecutar sin preguntas interactivas
+
+```bash
+./scripts/bootstrap.sh --full --yes
 ```
 
 ---
 
-## 🧰 Requisitos
+## Logs
 
-* macOS Ventura o superior
-* Usuario con permisos de administrador
+Cada ejecución genera un archivo en:
+
+```bash
+logs/
+```
+
+Esto permite revisar detalles, errores o auditoría del proceso.
 
 ---
 
-## 📝 Notas finales
+## Decisiones de diseño
 
-Este proyecto está diseñado para ser modular, seguro y fácil de modificar. La meta es tener un entorno reproducible que puedas ejecutar al cambiar de equipo o reinstalar macOS.
+### `bootstrap.sh`
+Es el punto de entrada. Orquesta todo el flujo.
+
+### `utils.sh`
+Contiene funciones reutilizables:
+- logging
+- validaciones
+- detección de Homebrew
+- helpers comunes
+
+### `validate_core.sh`
+Responsable de la base mínima del sistema:
+- Homebrew
+- Git
+
+### `setup_base.sh`
+Responsable de:
+- crear carpetas
+- configurar screenshots
+
+### `install_core.sh`
+Instala apps básicas.
+
+### `install_dev.sh`
+Instala herramientas de desarrollo.
+
+### `config/packages.conf`
+Centraliza la lista de herramientas. Esto facilita crecimiento futuro.
+
+---
+
+## Consideraciones importantes
+
+### Homebrew
+La instalación oficial puede pedir contraseña de administrador.
+
+### Apple Silicon
+El script contempla correctamente `/opt/homebrew`.
+
+### Docker Desktop
+Puede requerir pasos adicionales la primera vez que se abre.
+
+### Visual Studio Code
+El script instala la app, pero no habilita automáticamente el comando `code` en PATH.
+
+---
+
+## Futuras mejoras posibles
+
+- soporte para seleccionar paquetes individualmente
+- configuración de Git global
+- instalación de Java, Flutter o Android SDK variables
+- shellcheck en CI
+- más validaciones post-instalación
+- soporte para dotfiles
