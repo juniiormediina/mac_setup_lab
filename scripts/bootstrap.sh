@@ -63,6 +63,9 @@ show_welcome() {
   echo "Incluye:"
   echo "  - validación e instalación de herramientas base"
   echo "  - creación de carpetas principales"
+  echo "  - copia de comandos personalizados"
+  echo "  - instalación de Oh My Zsh, Powerlevel10k y plugins"
+  echo "  - copia del archivo .zshrc"
   echo "  - configuración de screenshots"
   echo "  - instalación opcional de herramientas de desarrollo"
   echo
@@ -76,6 +79,8 @@ run_basic_setup() {
   bash "$SCRIPT_DIR/validate_core.sh"
   bash "$SCRIPT_DIR/setup_base.sh"
   bash "$SCRIPT_DIR/move_command_files.sh"
+  bash "$SCRIPT_DIR/install_shell_stack.sh"
+  bash "$SCRIPT_DIR/configure_shell.sh"
   bash "$SCRIPT_DIR/install_core.sh"
 
   log_success "Fase básica completada."

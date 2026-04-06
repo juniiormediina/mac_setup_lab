@@ -14,7 +14,6 @@ readonly PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly LOG_DIR="$PROJECT_ROOT/logs"
 
 LOG_FILE=""
-NON_INTERACTIVE="false"
 
 print_blank() {
   echo
@@ -272,26 +271,6 @@ install_package_from_record() {
       ;;
     *)
       abort "Tipo de paquete no soportado: $package_type"
-      ;;
-  esac
-}
-
-confirm_action() {
-  local prompt_message="$1"
-
-  if [[ "$NON_INTERACTIVE" == "true" ]]; then
-    log_info "Modo no interactivo activo. Continuando automáticamente."
-    return 0
-  fi
-
-  read -r -p "$prompt_message [s/N]: " response
-
-  case "$response" in
-    s|S|si|SI|y|Y|yes|YES)
-      return 0
-      ;;
-    *)
-      return 1
       ;;
   esac
 }
