@@ -1,4 +1,4 @@
-# mac_setup_lab v2.3
+# mac_setup_lab
 
 Automatización modular para preparar una nueva máquina macOS de forma ordenada, clara y profesional.
 
