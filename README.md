@@ -161,3 +161,9 @@ logs/
 - `zsh-syntax-highlighting` debe quedar como último plugin cargado en `.zshrc`.
 - `config/p10k.zsh` versiona la apariencia del prompt de Powerlevel10k para que quede consistente en cualquier Mac nueva.
 - iTerm2 no crea automáticamente `~/.zshrc`; el archivo lo crea o copia este proyecto.
+
+
+agregar herramienta para el control de audio
+brew install --cask finetune
+
+agregar fuentes para la terminal
