@@ -166,4 +166,4 @@ logs/
 agregar herramienta para el control de audio
 brew install --cask finetune
 
-agregar fuentes para la terminal
+agregar fuentes para la terminal brew install --cask font-meslo-lg-nerd-font
